@@ -14,7 +14,6 @@ from warnings import warn
 from typing import Optional, Callable, Sequence, Union, Tuple, Dict, List
 from inspect import signature
 from functools import wraps
-from darts.dataprocessing import dtw
 
 
 logger = get_logger(__name__)
