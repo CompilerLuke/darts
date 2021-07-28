@@ -132,7 +132,8 @@ class NegativeBinomialLikelihoodModel(LikelihoodModel):
 
     def _sample(self, model_output: torch.Tensor) -> torch.Tensor:
         means, shape = self._means_and_shape_from_model_output(model_output)
-        return self._distribution(model_output).sample()
+        return means
+        #self._distribution(model_output).sample()
 
     @property
     def _num_parameters(self) -> int:
