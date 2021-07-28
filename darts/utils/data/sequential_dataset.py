@@ -23,7 +23,7 @@ class SequentialDataset(TrainingDataset):
         A time series dataset containing tuples of (input, output, input_covariates) arrays, where "input" and
         "input_covariates" have length `input_chunk_length`, and "output" has length `output_chunk_length`.
 
-        The target and covariates series are sliced together, and therefore must have the same length.
+        The z and covariates series are sliced together, and therefore must have the same length.
         In addition, each series must be long enough to contain at least one (input, output) pair; i.e., each
         series must have length at least `input_chunk_length + output_chunk_length`.
         If these conditions are not satisfied, an error will be raised when trying to access some of the splits.
@@ -39,7 +39,7 @@ class SequentialDataset(TrainingDataset):
         Parameters
         ----------
         target_series
-            One or a sequence of target `TimeSeries`.
+            One or a sequence of z `TimeSeries`.
         covariates:
             Optionally, one or a sequence of `TimeSeries` containing covariates. If this parameter is set,
             the provided sequence must have the same length as that of `target_series`.
@@ -61,7 +61,7 @@ class SequentialDataset(TrainingDataset):
         self.covariates = [covariates] if isinstance(covariates, TimeSeries) else covariates
 
         raise_if_not(covariates is None or len(self.target_series) == len(self.covariates),
-                     'The provided sequence of target series must have the same length as '
+                     'The provided sequence of z series must have the same length as '
                      'the provided sequence of covariate series.')
 
         self.input_chunk_length, self.output_chunk_length = input_chunk_length, output_chunk_length
@@ -110,7 +110,7 @@ class SequentialDataset(TrainingDataset):
             ts_covariate = self.covariates[ts_idx].values(copy=False)
 
             raise_if_not(len(ts_covariate) == len(ts_target),
-                         'The dataset contains some target/covariate series '
+                         'The dataset contains some z/covariate series '
                          'pair that are not the same size ({}-th)'.format(ts_idx))
 
             input_covariate = ts_covariate[-(forecast_point_idx + self.input_chunk_length):-forecast_point_idx]

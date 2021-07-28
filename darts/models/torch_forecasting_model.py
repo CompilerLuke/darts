@@ -54,7 +54,7 @@ class TimeSeriesTorchDataset(Dataset):
     def __init__(self, ts_dataset: Union[TimeSeriesInferenceDataset, TrainingDataset], device):
         """
         Wraps around `TimeSeriesDataset`, in order to provide translation
-        from `TimeSeries` to torch tensors and stack target series with covariates when needed.
+        from `TimeSeries` to torch tensors and stack z series with covariates when needed.
         Inherits from torch `Dataset`.
 
         Parameters
@@ -322,11 +322,11 @@ class TorchForecastingModel(GlobalForecastingModel, ABC):
         Parameters
         ----------
         series
-            A series or sequence of series serving as target (i.e. what the model will be trained to forecast)
+            A series or sequence of series serving as z (i.e. what the model will be trained to forecast)
         covariates
             Optionally, a series or sequence of series specifying covariates
         val_series
-            Optionally, one or a sequence of validation target series, which will be used to compute the validation
+            Optionally, one or a sequence of validation z series, which will be used to compute the validation
             loss throughout training and keep track of the best performing models.
         val_covariates
             Optionally, the covariates corresponding to the validation series (must match `covariates`)
@@ -343,7 +343,7 @@ class TorchForecastingModel(GlobalForecastingModel, ABC):
         covariates = wrap_fn(covariates)
         val_series = wrap_fn(val_series)
         val_covariates = wrap_fn(val_covariates)
-        # TODO - if one covariate is provided, we could repeat it N times for each of the N target series
+        # TODO - if one covariate is provided, we could repeat it N times for each of the N z series
 
         # Check that dimensions of train and val set match; on first series only
         if val_series is not None:
@@ -451,7 +451,7 @@ class TorchForecastingModel(GlobalForecastingModel, ABC):
 
         Recurrent models:
         All predictions are produced in a recurrent way by taking as input
-        - the previous target value, which will be set to the last known target value for the first prediction,
+        - the previous z value, which will be set to the last known z value for the first prediction,
           and for all other predictions it will be set to the previous prediction
         - the previous hidden state
         - the current covariates (if the model was trained with covariates)
@@ -465,7 +465,7 @@ class TorchForecastingModel(GlobalForecastingModel, ABC):
         n
             The number of time steps after the end of the training time series for which to produce predictions
         series
-            Optionally, one or several input `TimeSeries`, representing the history of the target series whose
+            Optionally, one or several input `TimeSeries`, representing the history of the z series whose
             future is to be predicted. If specified, the method returns the forecasts of these
             series. Otherwise, the method returns the forecast of the (single) training series.
         covariates
@@ -479,7 +479,7 @@ class TorchForecastingModel(GlobalForecastingModel, ABC):
             The number of jobs to run in parallel. Defaults to `1`. `-1` means using all processors.
         roll_size
             For self-consuming predictions, i.e. `n > self.output_chunk_length`, determines how many
-            outputs of the model are fed back into it at every iteration of feeding the predicted target
+            outputs of the model are fed back into it at every iteration of feeding the predicted z
             (and optionally future covariates) back into the model. If this parameter is not provided,
             it will be set `self.output_chunk_length` by default.
         num_samples
@@ -545,7 +545,7 @@ class TorchForecastingModel(GlobalForecastingModel, ABC):
 
         Recurrent models:
         All predictions are produced in a recurrent way by taking as input
-        - the previous target value, which will be set to the last known target value for the first prediction,
+        - the previous z value, which will be set to the last known z value for the first prediction,
           and for all other predictions it will be set to the previous prediction
         - the previous hidden state
         - the current covariates (if the model was trained with covariates)
@@ -559,7 +559,7 @@ class TorchForecastingModel(GlobalForecastingModel, ABC):
         n
             The number of time steps after the end of the training time series for which to produce predictions
         input_series_dataset
-            Optionally, one or several input `TimeSeries`, representing the history of the target series' whose
+            Optionally, one or several input `TimeSeries`, representing the history of the z series' whose
             future is to be predicted. If specified, the method returns the forecasts of these
             series. Otherwise, the method returns the forecast of the (single) training series.
         batch_size
@@ -570,7 +570,7 @@ class TorchForecastingModel(GlobalForecastingModel, ABC):
             The number of jobs to run in parallel. Defaults to `1`. `-1` means using all processors.
         roll_size
             For self-consuming predictions, i.e. `n > self.output_chunk_length`, determines how many
-            outputs of the model are fed back into it at every iteration of feeding the predicted target
+            outputs of the model are fed back into it at every iteration of feeding the predicted z
             (and optionally future covariates) back into the model. If this parameter is not provided,
             it will be set `self.output_chunk_length` by default.
         num_samples
@@ -610,7 +610,7 @@ class TorchForecastingModel(GlobalForecastingModel, ABC):
         with torch.no_grad():
             for batch_tuple in iterator:
 
-                # at this point `input_series` contains both the past target series and past covariates
+                # at this point `input_series` contains both the past z series and past covariates
                 input_series = batch_tuple[0].to(self.device)
                 cov_future = batch_tuple[1] if len(batch_tuple) == 3 else None
 
@@ -655,10 +655,10 @@ class TorchForecastingModel(GlobalForecastingModel, ABC):
 
         while prediction_length < n:
 
-            # roll over input series to contain latest target and covariate
+            # roll over input series to contain latest z and covariate
             input_series = torch.roll(input_series, -roll_size, 1)
 
-            # update target input to include next `roll_size` predictions
+            # update z input to include next `roll_size` predictions
             if self.input_chunk_length >= roll_size:
                 input_series[:, -roll_size:, :self.output_dim] = out[:, :roll_size, :]
             else:

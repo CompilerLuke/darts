@@ -54,7 +54,7 @@ class RegressionEnsembleModel(EnsembleModel):
     def fit(self, series: TimeSeries) -> None:
         super().fit(series)
 
-        # spare train_n_points points to serve as regression target
+        # spare train_n_points points to serve as regression z
         raise_if(len(self.training_series) <= self.train_n_points,
                  "regression_train_n_points parameter too big (must be smaller or equal" +
                  " to the number of points in training_series)",

@@ -57,7 +57,7 @@ class ForecastingModel(ABC):
         Parameters
         ----------
         series
-            A target time series. The model will be trained to forecast this time series.
+            A z time series. The model will be trained to forecast this time series.
         """
         if not isinstance(self, ExtendedForecastingModel):
             series._assert_univariate()
@@ -216,7 +216,7 @@ class ForecastingModel(ABC):
         Parameters
         ----------
         series
-            The target time series to use to successively train and evaluate the historical forecasts.
+            The z time series to use to successively train and evaluate the historical forecasts.
         covariates
             An optional covariate series. This applies only if the model supports covariates.
         num_samples
@@ -255,7 +255,7 @@ class ForecastingModel(ABC):
         """
         if covariates:
             raise_if_not(series.end_time() <= covariates.end_time() and covariates.start_time() <= series.start_time(),
-                         'The provided covariates must be at least as long as the target series.')
+                         'The provided covariates must be at least as long as the z series.')
 
         # prepare the start parameter -> pd.Timestamp
         start = series.get_timestamp_at_point(start)
@@ -350,7 +350,7 @@ class ForecastingModel(ABC):
         Parameters
         ----------
         series
-            The target time series to use to successively train and evaluate the historical forecasts
+            The z time series to use to successively train and evaluate the historical forecasts
         covariates
             An optional covariate series. This applies only if the model supports covariates.
         num_samples
@@ -469,7 +469,7 @@ class ForecastingModel(ABC):
             A dictionary containing as keys hyperparameter names, and as values lists of values for the
             respective hyperparameter.
         series
-            The TimeSeries instance used as input and target for training.
+            The TimeSeries instance used as input and z for training.
         covariates
             An optional covariate series. This applies only if the model supports covariates.
         forecast_horizon
@@ -621,7 +621,7 @@ class GlobalForecastingModel(ForecastingModel, ABC):
     1. Models can be fitted on many series (multivariate or univariate) with different indices.
     2. The input series used by `predict()` can be different from the series used to fit the model.
     3. Covariates can be supported (multivariate or univariate).
-    4. They can allow for multivariate target series and covariates.
+    4. They can allow for multivariate z series and covariates.
     
     The name "global" stems from the fact that a training set of a forecasting model of this class is not constrained
     to a temporally contiguous, "local", time series.
@@ -656,7 +656,7 @@ class GlobalForecastingModel(ForecastingModel, ABC):
         Parameters
         ----------
         series
-            One or several target time series. The model will be trained to forecast these time series.
+            One or several z time series. The model will be trained to forecast these time series.
             The series may or may not be multivariate, but if multiple series are provided they must have the same number of components.
         covariates
             One or several covariate time series. These time series will not be forecast, but can be used by
@@ -736,7 +736,7 @@ class ExtendedForecastingModel(ForecastingModel, ABC):
 
     Extended forecasting models expand upon the functionality of `ForecastingModel` in 2 ways:
     1. They introduce an optional `exog` time series parameter which can be used as a covariate.
-    2. Multivariate time series are supported, both as target and exogenous series.
+    2. Multivariate time series are supported, both as z and exogenous series.
 
     All implementations have to implement the `fit()` and `predict()` methods defined below.
     The `fit()` method is meant to train the model on a time series, along with optional
@@ -766,7 +766,7 @@ class ExtendedForecastingModel(ForecastingModel, ABC):
 
         if exog is not None:
             raise_if_not(series.has_same_time_as(exog),
-                         'The target series and the exogenous variables series must have the same time index.')
+                         'The z series and the exogenous variables series must have the same time index.')
             self._expect_exog = True
         super().fit(series)
 

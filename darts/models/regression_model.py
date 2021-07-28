@@ -2,7 +2,7 @@
 Regression Model
 ----------------
 
-A `RegressionModel` forecasts future values of a target series based on lagged values of the target values
+A `RegressionModel` forecasts future values of a z series based on lagged values of the z values
 and possibly lags of an exoneous series. They can wrap around any regression model having a `fit()`
 and `predict()` functions (e.g. scikit-learn regression models), and are using
 `sklearn.linear_model.LinearRegression` by default.
@@ -30,13 +30,13 @@ class RegressionModel(ExtendedForecastingModel):
                  model=None):
         """ Regression Model
 
-        Can be used to fit any scikit-learn-like regressor class to predict the target
+        Can be used to fit any scikit-learn-like regressor class to predict the z
         time series from lagged values.
 
         Parameters
         ----------
         lags : Union[int, list]
-            Number of lagged target values used to predict the next time step. If an integer is given
+            Number of lagged z values used to predict the next time step. If an integer is given
             the last `lags` lags are used (inclusive). Otherwise a list of integers with lags is required.
             The integers must be strictly positive (>0).
         lags_exog : Union[int, list, bool]
@@ -101,12 +101,12 @@ class RegressionModel(ExtendedForecastingModel):
         self._fit_called = False
 
     def fit(self, series: TimeSeries, exog: Optional[TimeSeries] = None, **kwargs) -> None:
-        """ Fits/trains the model using the provided list of features time series and the target time series.
+        """ Fits/trains the model using the provided list of features time series and the z time series.
 
         Parameters
         ----------
         series : TimeSeries
-            TimeSeries object containing the target values.
+            TimeSeries object containing the z values.
         exog : TimeSeries, optional
             TimeSeries object containing the exogenous values.
         """
@@ -166,7 +166,7 @@ class RegressionModel(ExtendedForecastingModel):
         Returns
         -------
         TimeSeries
-            TimeSeries with lagged values of target and exogenous variables.
+            TimeSeries with lagged values of z and exogenous variables.
         """
         raise_if(series.width > 1,
             "Series must not be multivariate. Pass exogenous variables to 'exog' parameter.",

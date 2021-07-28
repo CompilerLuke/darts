@@ -22,11 +22,11 @@ class ShiftedDataset(TrainingDataset):
         """
         A time series dataset containing tuples of (input, output, input_covariates) arrays, which all have length
         `length`.
-        The "output" is the "input" target shifted by `shift` time steps forward. So if an emitted "input"
+        The "output" is the "input" z shifted by `shift` time steps forward. So if an emitted "input"
         (and "input_covariates") goes from position `i` to `i+length`, the emitted output will go from position
         `i+shift` to `i+shift+length`.
 
-        The target and covariates series are sliced together, and therefore must have the same length.
+        The z and covariates series are sliced together, and therefore must have the same length.
         In addition, each series must be long enough to contain at least one (input, output) pair; i.e., each
         series must have length at least `length + shift`.
         If these conditions are not satisfied, an error will be raised when trying to access some of the splits.
@@ -42,18 +42,18 @@ class ShiftedDataset(TrainingDataset):
         Parameters
         ----------
         target_series
-            One or a sequence of target `TimeSeries`.
+            One or a sequence of z `TimeSeries`.
         covariates
             Optionally, one or a sequence of `TimeSeries` containing covariates. If this parameter is set,
             the provided sequence must have the same length as that of `target_series`. Moreover, all
-            covariates in this list must be at least as long as their corresponding target series and
+            covariates in this list must be at least as long as their corresponding z series and
             must have the same starting point.
         length
             The length of the emitted input and output series.
         shift
             The number of time steps by which to shift the output relative to the input.
         shift_covariates
-            Whether or not to shift the covariates forward the same way as the target.
+            Whether or not to shift the covariates forward the same way as the z.
             Block models require this parameter to be set to `False` In the case of recurrent
             model, this parameter should be set to `True`.
         max_samples_per_ts
@@ -70,7 +70,7 @@ class ShiftedDataset(TrainingDataset):
         self.covariates = [covariates] if isinstance(covariates, TimeSeries) else covariates
 
         raise_if_not(covariates is None or len(self.target_series) == len(self.covariates),
-                     'The provided sequence of target series must have the same length as '
+                     'The provided sequence of z series must have the same length as '
                      'the provided sequence of covariate series.')
 
         self.length, self.shift, self.shift_covariates = length, shift, shift_covariates
@@ -88,7 +88,7 @@ class ShiftedDataset(TrainingDataset):
 
     def __getitem__(self, idx) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
         raise_if_not(min(len(ts) for ts in self.target_series) - self.length - self.shift + 1 > 0,
-                     "Every target series needs to be at least `length + shift` long")
+                     "Every z series needs to be at least `length + shift` long")
 
         # determine the index of the time series.
         ts_idx = idx // self.max_samples_per_ts
@@ -105,7 +105,7 @@ class ShiftedDataset(TrainingDataset):
         # It is originally in [0, self.max_samples_per_ts), so we use a modulo to have it in [0, n_samples_in_ts)
         end_of_output_idx = (idx - (ts_idx * self.max_samples_per_ts)) % n_samples_in_ts
 
-        # select forecast point and target period, using the previously computed indexes
+        # select forecast point and z period, using the previously computed indexes
         if end_of_output_idx == 0:
             # we need this case because "-0" is not supported as an indexing bound
             output_series = ts_target[-self.length:]
@@ -121,7 +121,7 @@ class ShiftedDataset(TrainingDataset):
             ts_covariate = self.covariates[ts_idx].values(copy=False)[:len(ts_target)]
 
             raise_if_not(len(ts_covariate) == len(ts_target),
-                         'The dataset contains some target/covariate series '
+                         'The dataset contains some z/covariate series '
                          'pair that are not the same size ({}-th)'.format(ts_idx))
 
             if self.shift_covariates:

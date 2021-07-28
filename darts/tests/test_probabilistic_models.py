@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 
 try:
     from ..models import RNNModel, TCNModel
-    from darts.utils.likelihood_models import GaussianLikelihoodModel
+    from darts.utils.likelihood_models import GaussianLikelihoodModel, NegativeBinomialLikelihoodModel
     TORCH_AVAILABLE = True
 except ImportError:
     logger.warning('Torch not available. TCN tests will be skipped.')
@@ -26,6 +26,8 @@ if TORCH_AVAILABLE:
     models_cls_kwargs_errs += [
         (RNNModel, {'input_chunk_length': 2, 'training_length': 10, 'n_epochs': 20, 'random_state': 0,
                     'likelihood': GaussianLikelihoodModel()}, 1.9),
+        (RNNModel, {'input_chunk_length': 2, 'training_length': 10, 'n_epochs': 20, 'random_state': 0,
+                    'likelihood': NegativeBinomialLikelihoodModel()}, 1.9),
         (TCNModel, {'input_chunk_length': 10, 'output_chunk_length': 5, 'n_epochs': 60, 'random_state': 0,
                     'likelihood': GaussianLikelihoodModel()}, 0.28)
     ]
@@ -63,6 +65,8 @@ class ProbabilisticTorchModelsTestCase(DartsBaseTestClass):
         for model_cls, model_kwargs, err in models_cls_kwargs_errs:
             self.helper_test_probabilistic_forecast_accuracy(model_cls, model_kwargs, err,
                                                              self.constant_ts, self.constant_noisy_ts)
+
+            continue
             if issubclass(model_cls, GlobalForecastingModel):
                 self.helper_test_probabilistic_forecast_accuracy(model_cls, model_kwargs, err,
                                                                  self.constant_multivar_ts,
@@ -77,11 +81,17 @@ class ProbabilisticTorchModelsTestCase(DartsBaseTestClass):
         mae_err_median = mae(ts[100:], pred)
         self.assertLess(mae_err_median, err)
 
+        print(model_kwargs)
+        print(pred.univariate_values()[:10])
+        print("MAE ERR MEDIAN", mae_err_median)
+        print("MAE", err)
+
         # test accuracy for increasing quantiles between 0.7 and 1 (it should decrease)
         tested_quantiles = [0.7, 0.8, 0.9, 0.99]
         mae_err = mae_err_median
         for quantile in tested_quantiles:
             new_mae = mae(ts[100:], pred.quantile_timeseries(quantile=quantile))
+            print("NEW MAE")
             self.assertLess(mae_err, new_mae)
             mae_err = new_mae
 

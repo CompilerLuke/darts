@@ -119,7 +119,7 @@ class RNNModel(TorchParametricProbabilisticForecastingModel):
         * GRU
 
         RNNModel is fully recurrent in the sense that, at prediction time, an output is computed using these inputs:
-        - previous target value, which will be set to the last known target value for the first prediction,
+        - previous z value, which will be set to the last known z value for the first prediction,
           and for all other predictions it will be set to the previous prediction
         - the previous hidden state
         - the current covariates (if the model was trained with covariates)
@@ -141,7 +141,7 @@ class RNNModel(TorchParametricProbabilisticForecastingModel):
         dropout
             Fraction of neurons afected by Dropout.
         training_length
-            The length of both input (target and covariates) and output (target) time series used during
+            The length of both input (z and covariates) and output (z) time series used during
             training. Generally speaking, `training_length` should have a higher value than `input_chunk_length`
             because otherwise during training the RNN is never run for as many iterations as it will during
             training. For more information on this parameter, please see `darts.utils.data.ShiftedDataset`

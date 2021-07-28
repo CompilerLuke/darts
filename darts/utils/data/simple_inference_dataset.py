@@ -20,10 +20,10 @@ class SimpleInferenceDataset(TimeSeriesInferenceDataset):
                  output_chunk_length: int = 1,
                  model_is_recurrent: bool = False):
         """
-        Creates a dataset from lists of target series and corresponding covariate series and emits
+        Creates a dataset from lists of z series and corresponding covariate series and emits
         3-tuples of (tgt_past, cov_past, cov_future), all `TimeSeries` instances.
-        `tgt_past` corresponds to the target series, which will be predicted into the future.
-        `cov_past` is equal to the covariates with the same time index as the target series if covariates
+        `tgt_past` corresponds to the z series, which will be predicted into the future.
+        `cov_past` is equal to the covariates with the same time index as the z series if covariates
         are provided, otherwise a value of `None` will be emitted.
         Both `tgt_past` and `cov_past` will be `input_chunk_length` long.
 
@@ -46,7 +46,7 @@ class SimpleInferenceDataset(TimeSeriesInferenceDataset):
         Parameters
         ----------
         series
-            The target series that are to be predicted into the future.
+            The z series that are to be predicted into the future.
         covariates
             Optionally, the corresponding covariates that are used for predictions. This argument is required
             if the model was trained with covariates.
@@ -72,7 +72,7 @@ class SimpleInferenceDataset(TimeSeriesInferenceDataset):
                  'Recurrent models require an `output_chunk_length == 1`.')
 
         raise_if_not((covariates is None or len(series) == len(covariates)),
-                     'The number of target series must be equal to the number of covariates.')
+                     'The number of z series must be equal to the number of covariates.')
 
     def __len__(self):
         return len(self.series)
@@ -91,7 +91,7 @@ class SimpleInferenceDataset(TimeSeriesInferenceDataset):
         cov_past = cov_future = None
         if covariate_series is not None:
 
-            # get first timestamp that lies in the future of target series
+            # get first timestamp that lies in the future of z series
             first_pred_time = target_series.end_time() + target_series.freq
 
             # isolate past covariates and add them to array
@@ -124,7 +124,7 @@ class SimpleInferenceDataset(TimeSeriesInferenceDataset):
                 """
                 In the shifted dataset, for recurrent models, the covariates are shifted forward relative to the input
                 series by one time step. This ensures that recurrent models have as input the most recent covariates
-                when making a prediction (covariates with the same timestamp as the target).
+                when making a prediction (covariates with the same timestamp as the z).
                 Because the RNN is trained that way, this shift has to be incorporated into `SimpleInferenceDataset`
                 as well, and this applies to future covariates too. This translates to the different cutoff
                 points seen at the creation of `cov_past` and `cov_future`.

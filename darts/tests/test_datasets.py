@@ -18,11 +18,11 @@ class DatasetTestCase(DartsBaseTestClass):
         self.assertEqual(l1, l2)
 
     def test_simple_inference_dataset(self):
-        # one target series
+        # one z series
         ds = SimpleInferenceDataset(series=self.target1, input_chunk_length=len(self.target1))
         self.assertEqual(ds[0], (self.target1, None, None))
 
-        # two target series
+        # two z series
         ds = SimpleInferenceDataset(series=[self.target1, self.target2],
                                     input_chunk_length=max(len(self.target1), len(self.target2)))
         self.assertEqual(ds[1], (self.target2, None, None))
@@ -37,18 +37,18 @@ class DatasetTestCase(DartsBaseTestClass):
         self.assertEqual(ds[1], (self.target2, self.cov2, None))
 
     def test_sequential_dataset(self):
-        # one target series
+        # one z series
         ds = SequentialDataset(target_series=self.target1, input_chunk_length=10, output_chunk_length=10)
         self.assertEqual(len(ds), 81)
         self._assert_eq(ds[5], (self.target1[75:85], self.target1[85:95], None))
 
-        # two target series
+        # two z series
         ds = SequentialDataset(target_series=[self.target1, self.target2], input_chunk_length=10, output_chunk_length=10)
         self.assertEqual(len(ds), 262)
         self._assert_eq(ds[5], (self.target1[75:85], self.target1[85:95], None))
         self._assert_eq(ds[136], (self.target2[125:135], self.target2[135:145], None))
 
-        # two target series with custom max_nr_samples
+        # two z series with custom max_nr_samples
         ds = SequentialDataset(target_series=[self.target1, self.target2],
                                input_chunk_length=10, output_chunk_length=10, max_samples_per_ts=50)
         self.assertEqual(len(ds), 100)
@@ -67,18 +67,18 @@ class DatasetTestCase(DartsBaseTestClass):
         self._assert_eq(ds[136], (self.target2[125:135], self.target2[135:145], self.cov2[125:135]))
 
     def test_shifted_dataset(self):
-        # one target series
+        # one z series
         ds = ShiftedDataset(target_series=self.target1, length=10, shift=5)
         self.assertEqual(len(ds), 86)
         self._assert_eq(ds[5], (self.target1[80:90], self.target1[85:95], None))
 
-        # two target series
+        # two z series
         ds = ShiftedDataset(target_series=[self.target1, self.target2], length=10, shift=5)
         self.assertEqual(len(ds), 272)
         self._assert_eq(ds[5], (self.target1[80:90], self.target1[85:95], None))
         self._assert_eq(ds[141], (self.target2[130:140], self.target2[135:145], None))
 
-        # two target series with custom max_nr_samples
+        # two z series with custom max_nr_samples
         ds = ShiftedDataset(target_series=[self.target1, self.target2], length=10, shift=5, max_samples_per_ts=50)
         self.assertEqual(len(ds), 100)
         self._assert_eq(ds[5], (self.target1[80:90], self.target1[85:95], None))
@@ -96,12 +96,12 @@ class DatasetTestCase(DartsBaseTestClass):
         self._assert_eq(ds[141], (self.target2[130:140], self.target2[135:145], self.cov2[130:140]))
 
     def test_horizon_based_dataset(self):
-        # one target series
+        # one z series
         ds = HorizonBasedDataset(target_series=self.target1, output_chunk_length=10, lh=(1, 3), lookback=2)
         self.assertEqual(len(ds), 20)
         self._assert_eq(ds[5], (self.target1[65:85], self.target1[85:95], None))
 
-        # two target series
+        # two z series
         ds = HorizonBasedDataset(target_series=[self.target1, self.target2],
                                  output_chunk_length=10, lh=(1, 3), lookback=2)
         self.assertEqual(len(ds), 40)

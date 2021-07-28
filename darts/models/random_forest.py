@@ -33,7 +33,7 @@ class RandomForest(RegressionModel):
         Parameters
         ----------
         lags : Union[int, list]
-            Number of lagged target values used to predict the next time step. If an integer is given
+            Number of lagged z values used to predict the next time step. If an integer is given
             the last `lags` lags are used (inclusive). Otherwise a list of integers with lags is required.
         lags_exog : Union[int, list, bool]
             Number of lagged exogenous values used to predict the next time step. If an integer is given

@@ -253,3 +253,20 @@ class WoolyDataset(DatasetLoaderCSV):
             header_time="date",
             format_time="%Y-%m-%d"
         ))
+
+
+class PharmaSalesDataset(DatasetLoaderCSV):
+    """
+    Daily sales of pharmaceutical sales quantity across various drugs
+
+    https://www.kaggle.com/milanzdravkovic/pharma-sales-data
+    """
+
+    def __init__(self):
+        super().__init__(metadata=DatasetLoaderMetadata(
+            "pharma-sales.csv",
+            uri=_DEFAULT_PATH+"/pharma-sales.csv",
+            hash="3be7b8b182ccd96e48989b4e57311193",
+            header_time="datum",
+            format_time="%m-%d-%Y"
+        ))

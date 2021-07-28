@@ -39,7 +39,7 @@ class RegressionModelsTestCase(DartsBaseTestClass):
 
     np.random.seed(42)
 
-    # dummy feature and target TimeSeries instances
+    # dummy feature and z TimeSeries instances
     ts_periodic = tg.sine_timeseries(length=500)
     ts_gaussian = tg.gaussian_timeseries(length=500)
     ts_random_walk = tg.random_walk_timeseries(length=500)
@@ -159,7 +159,7 @@ class RegressionModelsTestCase(DartsBaseTestClass):
 
 
     def helper_test_models_accuracy(self, series, exog, min_rmse):
-        # for every model, test whether it predicts the target with a minimum r2 score of `min_rmse`
+        # for every model, test whether it predicts the z with a minimum r2 score of `min_rmse`
         train_f, train_t, test_f, test_t = train_test_split(exog, series, pd.Timestamp('20010101'))
 
         for model in self.models:
